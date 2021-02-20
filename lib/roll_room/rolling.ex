@@ -55,4 +55,11 @@ defmodule RollRoom.Rolling do
         limit: 200
     )
   end
+
+  def dicerolls_to_string(result) do
+    dicerolls_text = result.dicerolls |> Enum.map(&("(#{&1})")) |> Enum.join(" + ")
+
+    "#{dicerolls_text}"
+  end
+
 end
