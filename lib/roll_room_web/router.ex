@@ -17,8 +17,11 @@ defmodule RollRoomWeb.Router do
   scope "/", RollRoomWeb do
     pipe_through :browser
 
-    live "/", PageLive, :index
-    live "/room", RollsLive
+    get "/", RoomController, :index
+    # post "/rooms", RoomController, :join
+    live "/rooms/", RollsLive
+
+    live "/rooms/:id/", RollsLive
 
   end
 

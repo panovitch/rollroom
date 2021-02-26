@@ -10,6 +10,7 @@ defmodule RollRoom.Rolling.Result do
     field :secondary_dicerolls, {:array, :integer}
     field :result , :integer, null: false
 
+    belongs_to :room, RollRoom.Rolling.Room
 
     timestamps()
   end
