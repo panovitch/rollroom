@@ -10,7 +10,7 @@ defmodule RollRoom.Rolling.Result do
     field :secondary_dicerolls, {:array, :integer}
     field :result , :integer, null: false
 
-    belongs_to :room, RollRoom.Rolling.Room
+    belongs_to :room, RollRoom.Rooms.Room
 
     timestamps()
   end
@@ -18,7 +18,8 @@ defmodule RollRoom.Rolling.Result do
   @doc false
   def changeset(result, attrs) do
     result
-    |> cast(attrs, [:dicerolls, :bonus, :advantage, :result])
+    |> cast(attrs, [:dicerolls, :bonus, :advantage, :result, :room_id])
     |> validate_required([:dicerolls, :bonus, :advantage, :result])
+    |> assoc_constraint(:room)
   end
 end

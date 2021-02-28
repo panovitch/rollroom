@@ -34,10 +34,11 @@ defmodule RollRoomWeb.RollsLive do
     %{rollmap: %{20 => 0, 12 => 0, 10 => 0, 8 => 0, 6 => 0, 4 => 0}, bonus: 0, advantage: false, disadvantage: false}
   end
 
-  def mount(_params, _session, socket) do
-    Rolling.subscribe()
-    rolls = RollRoom.Rolling.list_results()
-    {:ok, assign(socket, Map.merge(%{results: rolls},  new_roll_state())) }
+  def mount(%{"slug" => room_slug}, _session, socket) do
+    room = RollRoom.Rooms.get_room_by_slug!(room_slug)
+    Rolling.subscribe(room)
+    rolls = RollRoom.Rolling.list_results(room)
+    {:ok, assign(socket, Map.merge(%{room: room, results: rolls},  new_roll_state())) }
   end
 
   def handle_event("incdie", %{"side" => die_side}, socket) do
@@ -46,7 +47,7 @@ defmodule RollRoomWeb.RollsLive do
   end
 
   def handle_event("roll", _, socket) do
-    Rolling.create_result(socket.assigns.rollmap, socket.assigns.bonus)
+    Rolling.create_result(socket.assigns.room, socket.assigns.rollmap, socket.assigns.bonus)
     {:noreply, assign(socket, new_roll_state())}
   end
 

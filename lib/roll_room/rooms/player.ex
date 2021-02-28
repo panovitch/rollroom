@@ -2,9 +2,9 @@ defmodule RollRoom.Rooms.Player do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "rooms" do
+  schema "players" do
     field :name, :string
-    field :room, :id
+    field :room_id, :id
 
     timestamps()
   end

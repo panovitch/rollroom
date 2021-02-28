@@ -1,0 +1,9 @@
+<h1>Join Room</h1>
+
+<%= form_for @conn, Routes.room_path(@conn, :join), fn f -> %>
+<div>
+  <%= text_input f, :room_name, placeholder: "room name" %>
+</div>
+<%= submit "Enter room!" %>
+
+<% end %>

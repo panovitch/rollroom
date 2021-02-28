@@ -20,37 +20,35 @@ defmodule RollRoom.Rolling do
     |> Enum.reduce({0, []}, fn {result, values}, {prev_result, prev_values} -> {prev_result + result, prev_values ++ values} end)
   end
 
-  def create_result(rollmap) do
+  def create_result(%RollRoom.Rooms.Room{} = room, rollmap, bonus \\ 0) do
     {result, values} = cast(rollmap)
-    save_result(%{result: result, dicerolls: values})
-  end
-  def create_result(rollmap, bonus) do
-    {result, values} = cast(rollmap)
-    save_result(%{result: result + bonus, dicerolls: values, bonus: bonus})
+    save_result(room, %{result: result + bonus, dicerolls: values, bonus: bonus})
   end
 
-  def save_result(attrs) do
+  def save_result(%RollRoom.Rooms.Room{} = room, attrs) do
     %Result{}
     |> Result.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:room, room)
     |> Repo.insert()
-    |> notify()
+    |> notify(room)
   end
 
-  defp notify({:ok, result}) do
-    Phoenix.PubSub.broadcast!(RollRoom.PubSub, "results", {:new_result,  result})
+  defp notify({:ok, result}, %RollRoom.Rooms.Room{} = room) do
+    Phoenix.PubSub.broadcast!(RollRoom.PubSub, "results_#{room.id}", {:new_result,  result})
     {:ok, result}
   end
-  defp notify({:error, error}) do
+  defp notify({:error, error}, _) do
     IO.inspect(error)
   end
 
-  def subscribe do
-    Phoenix.PubSub.subscribe(RollRoom.PubSub, "results")
+  def subscribe(%RollRoom.Rooms.Room{} = room) do
+    Phoenix.PubSub.subscribe(RollRoom.PubSub, "results_#{room.id}")
   end
 
-  def list_results do
+  def list_results(room) do
     Repo.all(
       from res in Result,
+        where: [room_id: ^room.id],
         order_by: [desc: res.inserted_at],
         limit: 200
     )
