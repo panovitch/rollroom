@@ -10,6 +10,8 @@ defmodule RollRoom.Rolling.Result do
     field :secondary_dicerolls, {:array, :integer}
     field :result , :integer, null: false
 
+    field :username, :string, null: false, default: "anonymous"
+
     belongs_to :room, RollRoom.Rooms.Room
 
     timestamps()
@@ -18,7 +20,7 @@ defmodule RollRoom.Rolling.Result do
   @doc false
   def changeset(result, attrs) do
     result
-    |> cast(attrs, [:dicerolls, :bonus, :advantage, :result, :room_id])
+    |> cast(attrs, [:dicerolls, :bonus, :advantage, :result, :room_id, :username])
     |> validate_required([:dicerolls, :bonus, :advantage, :result])
     |> assoc_constraint(:room)
   end

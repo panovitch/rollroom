@@ -20,9 +20,9 @@ defmodule RollRoom.Rolling do
     |> Enum.reduce({0, []}, fn {result, values}, {prev_result, prev_values} -> {prev_result + result, prev_values ++ values} end)
   end
 
-  def create_result(%RollRoom.Rooms.Room{} = room, rollmap, bonus \\ 0) do
+  def create_result(%RollRoom.Rooms.Room{} = room, username, rollmap, bonus \\ 0) do
     {result, values} = cast(rollmap)
-    save_result(room, %{result: result + bonus, dicerolls: values, bonus: bonus})
+    save_result(room, %{result: result + bonus, username: username, dicerolls: values, bonus: bonus})
   end
 
   def save_result(%RollRoom.Rooms.Room{} = room, attrs) do

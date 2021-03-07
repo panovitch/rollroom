@@ -3,15 +3,32 @@ defmodule RollRoomWeb.RollsLive do
 
   alias RollRoom.Rolling
 
+  @defaults %{rollmap: %{20 => 0, 12 => 0, 10 => 0, 8 => 0, 6 => 0, 4 => 0}, bonus: 0, advantage: false, disadvantage: false}
+
   def render(assigns) do
     ~L"""
+    <%= if @show_user_modal do %>
+    <!-- Modal Background -->
+      <div class="phx-modal">
+        <div class="phx-modal-content">
+          <div class="modal-title">
+            Who are you?
+          </div>
+          <form phx-submit="save_username">
+            <input type="text" name="u" placeholder="Enter a name"/>
+            <button type="submit">Ok!</button>
+          </form>
+        </div>
+      </div>
+    <% end %>
+
     <div class="whole-thing">
       <p> Your time to roll! </p>
-      <ul>
+      <div class="rollarea">
         <%= for result <- @results do %>
-          <li><b><%= result.result %></b>: <%= Rolling.dicerolls_to_string(result) %></li>
+        <p>🎲 <b><%= result.username %></b> rolled <b><%= result.result %></b>: <%= Rolling.dicerolls_to_string(result) %></p>
         <% end %>
-      </ul>
+      </div>
 
       <div class="controls">
         <div class="dice">
@@ -30,15 +47,11 @@ defmodule RollRoomWeb.RollsLive do
     """
   end
 
-  defp new_roll_state() do
-    %{rollmap: %{20 => 0, 12 => 0, 10 => 0, 8 => 0, 6 => 0, 4 => 0}, bonus: 0, advantage: false, disadvantage: false}
-  end
-
   def mount(%{"slug" => room_slug}, _session, socket) do
     room = RollRoom.Rooms.get_room_by_slug!(room_slug)
     Rolling.subscribe(room)
     rolls = RollRoom.Rolling.list_results(room)
-    {:ok, assign(socket, Map.merge(%{room: room, results: rolls},  new_roll_state())) }
+    {:ok, assign(socket, Map.merge(%{room: room, results: rolls, show_user_modal: true, current_username: nil}, @defaults)) }
   end
 
   def handle_event("incdie", %{"side" => die_side}, socket) do
@@ -47,8 +60,8 @@ defmodule RollRoomWeb.RollsLive do
   end
 
   def handle_event("roll", _, socket) do
-    Rolling.create_result(socket.assigns.room, socket.assigns.rollmap, socket.assigns.bonus)
-    {:noreply, assign(socket, new_roll_state())}
+    Rolling.create_result(socket.assigns.room, socket.assigns.current_username, socket.assigns.rollmap, socket.assigns.bonus)
+    {:noreply, assign(socket, @defaults)}
   end
 
   def handle_event("bonus", %{"action" => "increase"}, socket) do
@@ -58,6 +71,10 @@ defmodule RollRoomWeb.RollsLive do
   def handle_event("bonus", %{"action" => "decrease"}, socket) do
     socket = update(socket, :bonus, &(&1-1))
     {:noreply, socket}
+  end
+
+  def handle_event("save_username", %{"u" => username}, socket) do
+    {:noreply, assign(socket, %{current_username: username, show_user_modal: false})}
   end
 
   def handle_info({:new_result, result}, socket) do

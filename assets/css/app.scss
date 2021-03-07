@@ -89,3 +89,14 @@
   display: block;
   margin: -1rem 0 2rem;
 }
+
+.rollarea {
+  width: 80%;
+  height: 20%;
+  overflow: scroll;
+  text-align: justify;
+  resize: vertical;
+}
+.rollarea p {
+  margin-bottom: 0;
+}
