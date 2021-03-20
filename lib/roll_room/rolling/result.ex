@@ -20,7 +20,7 @@ defmodule RollRoom.Rolling.Result do
   @doc false
   def changeset(result, attrs) do
     result
-    |> cast(attrs, [:dicerolls, :bonus, :advantage, :result, :room_id, :username])
+    |> cast(attrs, [:dicerolls, :secondary_dicerolls, :bonus, :advantage, :disadvantage, :result, :room_id, :username])
     |> validate_required([:dicerolls, :bonus, :advantage, :result])
     |> assoc_constraint(:room)
   end

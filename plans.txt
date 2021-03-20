@@ -1,0 +1,4 @@
+make the re-roll rearragne the previous rolls
+prevent 0-die rolls
+disable adjusting the field or preserve import
+search for more bugs

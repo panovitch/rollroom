@@ -20,10 +20,34 @@ defmodule RollRoom.Rolling do
     |> Enum.reduce({0, []}, fn {result, values}, {prev_result, prev_values} -> {prev_result + result, prev_values ++ values} end)
   end
 
-  def create_result(%RollRoom.Rooms.Room{} = room, username, rollmap, bonus \\ 0) do
+  def double_cast(rollmap, advantage) do
+    {first_result, first_values} = cast(rollmap)
+    {second_result, second_values} = cast(rollmap)
+
+
+    cond do
+      advantage and first_result >= second_result ->
+        {first_result, first_values, second_values}
+      advantage and first_result < second_result ->
+        {second_result, second_values, first_values}
+      not advantage and first_result >= second_result ->
+        {second_result, second_values, first_values}
+      not advantage and first_result < second_result ->
+        {first_result, first_values, second_values}
+    end
+  end
+
+
+  def create_result(%{rollmap: rollmap, bonus: bonus, room: room, username: username, advantage: false, disadvantage: false}) do
     {result, values} = cast(rollmap)
     save_result(room, %{result: result + bonus, username: username, dicerolls: values, bonus: bonus})
   end
+  def create_result(%{rollmap: rollmap, bonus: bonus, room: room, username: username, advantage: advantage, disadvantage: disadvantage}) do
+    adv = advantage and not disadvantage
+    {result, winning_dicerolls, loosing_dicerolls} = double_cast(rollmap, adv)
+    save_result(room, %{result: result + bonus, username: username, dicerolls: winning_dicerolls, secondary_dicerolls: loosing_dicerolls, bonus: bonus, advantage: advantage, disadvantage: disadvantage})
+  end
+
 
   def save_result(%RollRoom.Rooms.Room{} = room, attrs) do
     %Result{}
@@ -54,10 +78,47 @@ defmodule RollRoom.Rolling do
     )
   end
 
-  def dicerolls_to_string(result) do
-    dicerolls_text = result.dicerolls |> Enum.map(&("(#{&1})")) |> Enum.join(" + ")
+  defp die_to_string(side, 1) do
+    "d#{side}"
+  end
+  defp die_to_string(side, amount) do
+    "#{amount}d#{side}"
+  end
+  def roll_to_string(rollmap, bonus) do
+    rollstring = rollmap
+    |> Enum.filter(fn {_, value} -> value != 0 end)
+    |> Enum.map(fn {side, amount} -> die_to_string(side, amount) end)
+    |> Enum.join(" + ")
 
-    "#{dicerolls_text}"
+    "#{rollstring} #{bonus_to_string(bonus)}"
+  end
+
+  def result_to_string(result) when result.advantage == true do
+    dicerolls_text = dicerolls_to_string(result.dicerolls)
+    loosing_diceroll_text = dicerolls_to_string(result.secondary_dicerolls)
+    "advantage: #{dicerolls_text} over #{loosing_diceroll_text} #{bonus_to_string(result.bonus)}"
+  end
+  def result_to_string(result) when result.disadvantage do
+    dicerolls_text = dicerolls_to_string(result.dicerolls)
+    loosing_diceroll_text = dicerolls_to_string(result.secondary_dicerolls)
+    "disadvantage: #{dicerolls_text} over #{loosing_diceroll_text} #{bonus_to_string(result.bonus)}"
+  end
+  def result_to_string(result) do
+    dicerolls_text = dicerolls_to_string(result.dicerolls)
+    "#{dicerolls_text} #{bonus_to_string(result.bonus)}"
+  end
+
+  def dicerolls_to_string(dicerolls) do
+    dicerolls |> Enum.map(&("(#{&1})")) |> Enum.join(" + ")
+  end
+
+  defp bonus_to_string(bonus) do
+    cond do
+      bonus == 0 -> ""
+      bonus > 0 -> "+ #{abs(bonus)}"
+      bonus < 0 -> "- #{abs(bonus)}"
+      true -> ""
+    end
   end
 
 end
