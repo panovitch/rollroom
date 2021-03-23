@@ -91,11 +91,10 @@
 }
 
 .rollarea {
-  width: 80%;
-  height: 20%;
+  width: 100%;
+  height: 400px;
   overflow: scroll;
   text-align: justify;
-  resize: vertical;
 }
 .rollarea p {
   margin-bottom: 0;

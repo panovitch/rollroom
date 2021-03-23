@@ -74,16 +74,6 @@ defmodule RollRoomWeb.RollsLive do
     {:ok, assign(socket, Map.merge(%{room: room, results: rolls, show_user_modal: true, username: nil}, @defaults)) }
   end
 
-  defp create_result_and_refresh(socket, state) do
-    Rolling.create_result(state)
-
-    Map.put(
-      @defaults,
-      :previous_states,
-      [ Map.delete(socket.assigns, :results) | socket.assigns.previous_states]
-    )
-  end
-
   def handle_event("incdie", %{"side" => die_side}, socket) do
     new_rollmap = Map.update!(socket.assigns.rollmap, String.to_integer(die_side), &(&1+1))
     {:noreply, assign(socket, :rollmap, new_rollmap)}
@@ -99,14 +89,31 @@ defmodule RollRoomWeb.RollsLive do
   end
 
   def handle_event("reroll",  %{"roll_index" => index}, socket) do
-    state = Enum.at(socket.assigns.previous_states, String.to_integer(index))
-    new_state = create_result_and_refresh(socket, state)
+    index = String.to_integer(index)
+    state = Enum.at(socket.assigns.previous_states, index)
+    Rolling.create_result(state)
+
+    new_state = Map.put(
+      @defaults,
+      :previous_states,
+      [ state | List.delete_at(socket.assigns.previous_states, index) ]
+    )
+
     {:noreply, assign(socket, new_state)}
   end
 
   def handle_event("roll", _, socket) do
-    new_state = create_result_and_refresh(socket, socket.assigns)
-    {:noreply, assign(socket, new_state)}
+    if Rolling.empty?(socket.assigns.rollmap) do
+      {:noreply, socket}
+    else
+      Rolling.create_result(socket.assigns)
+      new_state = Map.put(
+        @defaults,
+        :previous_states,
+        [ Map.delete(socket.assigns, :results) | socket.assigns.previous_states]
+      )
+      {:noreply, assign(socket, new_state)}
+    end
   end
 
   def handle_event("bonus", %{"action" => "increase"}, socket) do

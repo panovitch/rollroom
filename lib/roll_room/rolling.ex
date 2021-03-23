@@ -13,6 +13,10 @@ defmodule RollRoom.Rolling do
     {result + next_result, [result] ++ next_values}
   end
 
+  def empty?(rollmap) do
+    Enum.empty?(rollmap |> Enum.filter(fn {_, value} -> value != 0 end))
+  end
+
   def cast(rollmap) do
     rollmap
     |> Enum.filter(fn {_, value} -> value != 0 end)
