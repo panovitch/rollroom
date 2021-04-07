@@ -2,6 +2,7 @@ defmodule RollRoomWeb.RollsLive do
   use Phoenix.LiveView
 
   alias RollRoom.Rolling
+  alias RollRoomWeb.Router.Helpers, as: Routes
 
   @defaults %{
     rollmap: %{20 => 0, 12 => 0, 10 => 0, 8 => 0, 6 => 0, 4 => 0},
@@ -29,7 +30,10 @@ defmodule RollRoomWeb.RollsLive do
     <% end %>
 
     <div class="whole-thing">
-      <p> Your time to roll! </p>
+      <%= if @username do %>
+        <p> Your time to roll, <%= @username %>! <button phx-click="change_name">change name...</button></p>
+      <% end %>
+
       <div class="rollarea">
         <%= for result <- @results do %>
         <p>🎲 <b><%= result.username %></b> rolled <b><%= result.result %></b>: <%= Rolling.result_to_string(result) %></p>
@@ -67,6 +71,12 @@ defmodule RollRoomWeb.RollsLive do
     """
   end
 
+  def mount(%{"slug" => room_slug, "username" => username}, _session, socket) do
+    room = RollRoom.Rooms.get_room_by_slug!(room_slug)
+    Rolling.subscribe(room)
+    rolls = RollRoom.Rolling.list_results(room)
+    {:ok, assign(socket, Map.merge(%{room: room, results: rolls, show_user_modal: false, username: username}, @defaults)) }
+  end
   def mount(%{"slug" => room_slug}, _session, socket) do
     room = RollRoom.Rooms.get_room_by_slug!(room_slug)
     Rolling.subscribe(room)
@@ -138,7 +148,11 @@ defmodule RollRoomWeb.RollsLive do
   end
 
   def handle_event("save_username", %{"u" => username}, socket) do
-    {:noreply, assign(socket, %{username: username, show_user_modal: false})}
+    {:noreply, push_redirect(socket, to: Routes.live_path(socket, RollRoomWeb.RollsLive, socket.assigns.room.slug, username: username))}
+  end
+
+  def handle_event("change_name", _, socket) do
+    {:noreply, assign(socket, :show_user_modal, true)}
   end
 
   def handle_info({:new_result, result}, socket) do
