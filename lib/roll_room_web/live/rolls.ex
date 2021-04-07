@@ -1,6 +1,5 @@
 defmodule RollRoomWeb.RollsLive do
   use Phoenix.LiveView
-
   alias RollRoom.Rolling
 
   @defaults %{
@@ -29,7 +28,6 @@ defmodule RollRoomWeb.RollsLive do
     <% end %>
 
     <div class="whole-thing">
-      <p> Your time to roll! </p>
       <div class="rollarea">
         <%= for result <- @results do %>
         <p>🎲 <b><%= result.username %></b> rolled <b><%= result.result %></b>: <%= Rolling.result_to_string(result) %></p>
@@ -37,11 +35,16 @@ defmodule RollRoomWeb.RollsLive do
       </div>
 
       <div class="controls">
-        <div class="dice">
+        <div class="dice" >
           <%= for { die_side, die_amount } <- @rollmap do %>
-            d<%= die_side %>: <%= die_amount %>
-            <button phx-click="incdie" phx-value-side=<%= die_side %> phxclass="plus">+</button>
-            <button phx-click="decdie" phx-value-side=<%= die_side %> phxclass="minus">-</button>
+          <div class="die-box">
+            <div class="die-controls">
+              d<%= die_side %>: <%= die_amount %>
+              <button phx-click="incdie" phx-value-side=<%= die_side %> phxclass="plus">+</button>
+              <button phx-click="decdie" phx-value-side=<%= die_side %> phxclass="minus">-</button>
+            </div>
+            <img class="die" src=<%= RollRoomWeb.Router.Helpers.static_path(@socket, "/images/12-die.png") %> />
+          </div>
           <% end %>
         </div>
         <div>
