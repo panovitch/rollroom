@@ -30,7 +30,9 @@ defmodule RollRoomWeb.RollsLive do
 
     <div class="whole-thing">
       <%= if @username do %>
-        <p> Your time to roll, <%= @username %>! <button phx-click="change_name">change name...</button></p>
+        <div class="greeting">
+          <p> Your time to roll, <%= @username %>! <button phx-click="change_name">change name...</button></p>
+        </div>
       <% end %>
 
       <div class="rollarea">
@@ -40,35 +42,38 @@ defmodule RollRoomWeb.RollsLive do
       </div>
 
       <div class="controls">
+        <div class="rerolls">
+          Previous rolls:
+          <%= for {%{rollmap: rollmap, bonus: bonus}, index} <- Enum.with_index(@previous_states) do %>
+            <button phx-click="reroll" phx-value-roll_index=<%= index %> phxclass="plus"><%= Rolling.roll_to_string(rollmap, bonus) %></button>
+          <% end %>
+        </div>
         <div class="dice" >
           <%= for { die_side, die_amount } <- @rollmap do %>
-          <div class="die-box">
             <div class="die-controls">
               d<%= die_side %>: <%= die_amount %>
               <button phx-click="incdie" phx-value-side=<%= die_side %> phxclass="plus">+</button>
               <button phx-click="decdie" phx-value-side=<%= die_side %> phxclass="minus">-</button>
             </div>
-          </div>
           <% end %>
         </div>
-        <div>
-          <p> <%= @bonus %> </p>
-          <button phx-click="bonus" phxclass="plus" phx-value-action="increase">+</button>
-          <button phx-click="bonus" phxclass="minus" phx-value-action="decrease">-</button>
+        <div class="bonus_and_adv">
+          <div class="bonus">
+            Bonus: <%= @bonus %>
+            <button phx-click="bonus" phxclass="plus" phx-value-action="increase">+</button>
+            <button phx-click="bonus" phxclass="minus" phx-value-action="decrease">-</button>
+          </div>
+          <div class="adv">
+              Advantage:
+              <button phx-click="advantage" class=<%= if @advantage, do: "enabled", else: "disabled" %>>
+              adv</button>
+              <button phx-click="disadvantage" class=<%= if @disadvantage, do: "enabled", else: "disabled" %>>
+              disadv</button>
+          </div>
         </div>
+        <div class="roll">
+          <button  phx-click="roll" phxclass="plus"> roll! </button>
         <div>
-            <button phx-click="advantage" class=<%= if @advantage, do: "enabled", else: "disabled" %>>
-            adv</button>
-            <button phx-click="disadvantage" class=<%= if @disadvantage, do: "enabled", else: "disabled" %>>
-            disadv</button>
-
-        </div>
-        <button phx-click="roll" phxclass="plus"> roll! </button>
-      </div>
-      <div class="rerolls">
-        <%= for {%{rollmap: rollmap, bonus: bonus}, index} <- Enum.with_index(@previous_states) do %>
-          <button phx-click="reroll" phx-value-roll_index=<%= index %> phxclass="plus"><%= Rolling.roll_to_string(rollmap, bonus) %></button>
-        <% end %>
       </div>
     </div>
     """
@@ -123,7 +128,7 @@ defmodule RollRoomWeb.RollsLive do
       new_state = Map.put(
         @defaults,
         :previous_states,
-        [ Map.delete(socket.assigns, :results) | socket.assigns.previous_states]
+        [ Map.delete(socket.assigns, :results) | socket.assigns.previous_states] |> Enum.take(10)
       )
       {:noreply, assign(socket, new_state)}
     end

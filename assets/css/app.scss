@@ -93,20 +93,26 @@
 .rollarea {
   margin-left: 10%;
   margin-right: 10%;
-  margin-bottom: 5%;
+  margin-bottom: 2%;
   height: 400px;
   overflow: scroll;
   text-align: justify;
-  border: 1px solid gray;
+  border: 2px solid gray;
   border-left: none;
   border-right: none;
 
 }
 
+.greeting {
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
 .controls {
   margin-left: 10%;
   margin-right: 10%;
-  text-align: center;
+  text-align: justify;
+  font-size: large;
 }
 
 .rollarea p {
@@ -125,20 +131,57 @@ h3 {
   padding-left: 10%;
 }
 
-.die {
-  height: 300px; width: 300px; 
-
+.dice {
+  margin-left: 20%;
+  margin-right: 20%;
+  padding-bottom: 1%;
+  border-bottom: 1px solid gray;
+  margin-bottom: 2%;
+  text-align: center;
 }
 
-.dice {
-  margin-left: 10%;
-  margin-right: 10%;
-  display: table;
-  clear: both;
+.bonus_and_adv {
+  margin-left: 20%;
+  margin-right: 20%;
+  padding-bottom: 1%;
+  margin-bottom: 2%;
+  border-bottom: 1px solid gray;
+  text-align: center;
+}
+.rerolls {
+  margin-left: 20%;
+  margin-right: 20%;
+  padding-bottom: 1%;
+  margin-bottom: 2%;
+  border-bottom: 1px solid gray;
+  text-align: justify;
 }
 
 .die-controls {
-  position: relative;
-  left: 50%;
-  top: 50%;
+  display: inline;
+}
+
+.bonus {
+  display: inline;
+}
+
+.adv {
+  display: inline;
+}
+
+.roll {
+  text-align: center;
+}
+
+.controls button {
+
+  vertical-align: text-bottom;
+  font-size: large;
+}
+
+.roll button {
+  padding-left: 20%;
+  padding-right: 20%;
+  padding-top: 1%;
+  padding-bottom: 1%;
 }
